@@ -39,28 +39,18 @@ void store_frequency_table(std::unordered_map<std::string, int> &map, std::strin
   }
 }
 
-// Processes the maps and obtains n-gram frequencies from a text using a sliding window
-void count_frequencies(std::unordered_map<std::string, int> &map, const std::string &text, int n) {
-  std::string window;
-  for (int i = 0; i < text.length(); i++) {
-    window.push_back(text[i]);
-    if (window.size() == n) {
-      map[window]++;
-      window.erase(window.begin());
+void count_frequencies_words(std::unordered_map<std::string, int> &map, std::string &text) {
+  std::string word;
+  for (const char c : text) {
+    if (std::isalpha(c)) {
+      word += std::toupper(c);
+    } else {
+      if (word.size() != 0) {
+        map[word] ++;
+        word = "";
+      }
     }
   }
-}
-
-// Generates a vector that normalizes the frequencies from 0-1
-std::unordered_map<std::string, float> normalize_frequencies(std::unordered_map<std::string, int> &map) {
-  std::unordered_map<std::string, float> normalized_map;
-  int sum = std::accumulate(map.begin(), map.end(), 0, [](int s, const auto &pair){return s + pair.second;});
-
-  for (const auto &pair : map) {
-    normalized_map[pair.first] = static_cast<float>(pair.second) / sum;
-  }
-
-  return normalized_map;
 }
 
 int main() {
@@ -77,6 +67,7 @@ int main() {
   std::unordered_map<std::string, int> trigram_freq;
   std::unordered_map<std::string, int> fourgram_freq;
   std::unordered_map<std::string, int> fivegram_freq;
+  std::unordered_map<std::string, int> words_freq;
 
   // Prepares the text to be encrypted
   std::cout << "Normalizing text..." << std::endl;
@@ -89,6 +80,7 @@ int main() {
   count_frequencies(trigram_freq, cipher_text, 3);
   count_frequencies(fourgram_freq, cipher_text, 4);
   count_frequencies(fivegram_freq, cipher_text, 5);
+  count_frequencies_words(words_freq, text);
 
   // Normalizes the frequencies
   // std::cout << "Normalizing frequency tables..." << std::endl;
@@ -105,6 +97,8 @@ int main() {
   store_frequency_table(trigram_freq, "trigram_freq.txt");
   store_frequency_table(fourgram_freq, "fourgram_freq.txt");
   store_frequency_table(fivegram_freq, "fivegram_freq.txt");
+  store_frequency_table(words_freq, "words_freq.txt");
+
 
   std::cout << "Done!" << std::endl;
   
